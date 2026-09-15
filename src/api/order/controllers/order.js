@@ -1,6 +1,6 @@
 'use strict';
 
-require('stripe')('sk_test_51Q5Z1PHdZBP6WisapRtEDa0JkSpbThT67Ood3JB5cUIawb3Pjt5Tj78jeawuvdZNNJdoCCZCFfojPzEtV4mLyPP900nqOkRKzk')
+const stripe = require('stripe')('sk_test_51Q5Z1PHdZBP6WisapRtEDa0JkSpbThT67Ood3JB5cUIawb3Pjt5Tj78jeawuvdZNNJdoCCZCFfojPzEtV4mLyPP900nqOkRKzk');
 
 function caclDiscountPrice(price, discount) {
 
@@ -18,7 +18,7 @@ function caclDiscountPrice(price, discount) {
 
 const { createCoreController } = require('@strapi/strapi').factories;
 
-module.exports = createCoreController('api::order.order', ( {strapi} ) => ({
+module.exports = createCoreController('api::order.order', ({ strapi }) => ({
 
     async paymentOrder(ctx) {
         // envio los datos
@@ -26,8 +26,8 @@ module.exports = createCoreController('api::order.order', ( {strapi} ) => ({
 
         // calculo el total a pagar
         let totalPayment = 0;
-        products.forEach( product => {
-            const priceTemp = caclDiscountPrice(product.atributes.price, product.atributes.discount);
+        products.forEach(product => {
+            const priceTemp = caclDiscountPrice(product.attributes.price, product.attributes.discount);
             totalPayment += priceTemp * product.quantity;
         });
 
@@ -42,7 +42,7 @@ module.exports = createCoreController('api::order.order', ( {strapi} ) => ({
         // creo la informacion que se va a guardar en la base de datos
         const data = {
             products,
-            user:  idUser,
+            user: idUser,
             idPayment: charge.id,
             addressShipping,
             totalPayment,
@@ -54,11 +54,11 @@ module.exports = createCoreController('api::order.order', ( {strapi} ) => ({
         // compruebo que el modelo y los datos que se van a guardar sean iguales
         const validData = await strapi.entityValidator.validateEntityCreation(model, data);
         // guardo los datos en la base de datos
-        const entry = await strapi.query('api::order.order').create( { data: validData } );
+        const entry = await strapi.query('api::order.order').create({ data: validData });
 
         // devuelvo respuesta al cliente para que sepa que se hizo el pago correctamente
         return entry;
-    } ,
+    },
 
-    
-}) );
+
+}));
